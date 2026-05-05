@@ -464,6 +464,15 @@ th{color:var(--text2)}
     <!-- ═══════════════════════════════════════════════ -->
 
     <div id="tab-storage" class="tab-pane">
+      <div class="card" style="margin-bottom:1rem">
+        <h3>🔑 Supabase Service Key <span style="font-size:.75rem;color:var(--text2);font-weight:normal">(delete ke liye zaroori)</span></h3>
+        <p style="color:var(--text2);font-size:.85rem;margin:.5rem 0">Supabase → Project Settings → API → <strong>service_role</strong> key yahan paste karein:</p>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input type="password" id="sb-service-key" placeholder="eyJ..." style="flex:1" value="">
+          <button class="btn" onclick="saveServiceKey()">💾 Save</button>
+        </div>
+        <div id="service-key-status" style="font-size:.8rem;margin-top:.4rem;color:var(--secondary)"></div>
+      </div>
       <div class="card">
         <h3>📦 Storage Manager</h3>
         <p style="color:var(--text2);margin-top:.5rem">Supabase Storage mein PDF aur Cover files:</p>
@@ -487,11 +496,27 @@ th{color:var(--text2)}
 // =================== SUPABASE INIT ===================
 const SUPABASE_URL = 'https://ykmsizkprilhidqvxaqq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UNOPedCOLNaCz878UCdo3w_5dnM-Gp-';
-let _sb = null;
+let _sb = null, _sbAdmin = null;
+
 function getSB(){
   if(_sb) return _sb;
   if(window.supabase){ _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return _sb; }
   return null;
+}
+function getSBAdmin(){
+  const key = localStorage.getItem('sb_service_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbXNpemtwcmlsaGlkcXZ4YXFxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzY5MjUyMywiZXhwIjoyMDkzMjY4NTIzfQ.dT0-qvsfQqhogsgPjKdzZqYRAd5sqARZ_7UHFBERguU';
+  if(!key) return null;
+  if(_sbAdmin) return _sbAdmin;
+  if(window.supabase){ _sbAdmin = window.supabase.createClient(SUPABASE_URL, key); return _sbAdmin; }
+  return null;
+}
+function saveServiceKey(){
+  const key = document.getElementById('sb-service-key').value.trim();
+  if(!key){ showToast('❌ Key empty hai'); return; }
+  localStorage.setItem('sb_service_key', key);
+  _sbAdmin = null; // reset so new client is created
+  document.getElementById('service-key-status').innerText = '✅ Key save ho gayi! Ab delete kaam karega.';
+  showToast('✅ Service key save ho gayi!');
 }
 
 // =================== CONFIG ===================
@@ -741,7 +766,7 @@ function editBook(idx){
 async function deleteBook(idx){
   if(!confirm('Yeh kitab delete karna chahte hain?')) return;
   if(!GH_TOKEN){
-    showToast('❌ Pehle GitHub Token set karein (upar GitHub Setup mein)!');
+    showToast('❌ Pehle GitHub Token set karein!');
     document.getElementById('github-setup').scrollIntoView({behavior:'smooth'});
     return;
   }
@@ -771,70 +796,6 @@ function exportBooks(){
   a.download = 'books.json';
   a.click();
   showToast('✅ books.json download ho rahi hai!');
-}
-
-// =================== STORAGE MANAGER ===================
-async function loadStorageFiles(bucket){
-  const sb = getSB();
-  if(!sb){ showToast('❌ Supabase connect nahi hua'); return; }
-  const statusEl = document.getElementById('storage-status');
-  const listEl = document.getElementById('storage-list');
-  statusEl.innerText = '⏳ Files load ho rahi hain...';
-  listEl.innerHTML = '';
-  try {
-    const { data, error } = await sb.storage.from(bucket).list('', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
-    if(error){ statusEl.innerText = '❌ Error: ' + error.message; return; }
-    const files = (data || []).filter(f => f.name && f.name !== '.emptyFolderPlaceholder');
-    statusEl.innerText = `✅ ${bucket} — ${files.length} file(s)`;
-    if(files.length === 0){
-      listEl.innerHTML = '<div style="color:var(--text3);padding:1rem">Koi file nahi mili.</div>';
-      return;
-    }
-    listEl.innerHTML = `
-      <table>
-        <thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead>
-        <tbody>
-          ${files.map(f => {
-            const { data: urlData } = sb.storage.from(bucket).getPublicUrl(f.name);
-            const url = urlData.publicUrl;
-            const isPdf = f.name.toLowerCase().endsWith('.pdf');
-            const sizeKB = f.metadata?.size ? (f.metadata.size / 1024).toFixed(1) + ' KB' : '—';
-            const preview = isPdf
-              ? `<a href="${url}" target="_blank" style="color:var(--secondary)">📄 Open</a>`
-              : `<img src="${url}" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.outerHTML='🖼️'">`;
-            // Date/time format
-            let dateStr = '—';
-            const raw = f.created_at || f.updated_at || f.metadata?.lastModified;
-            if(raw){
-              const d = new Date(raw);
-              const date = d.toLocaleDateString('ur-PK', {day:'2-digit', month:'2-digit', year:'numeric'});
-              const time = d.toLocaleTimeString('en-PK', {hour:'2-digit', minute:'2-digit', hour12:true});
-              dateStr = `<span style="color:var(--text)">${date}</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 ${time}</span>`;
-            }
-            return `<tr>
-              <td>${preview}</td>
-              <td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.name}">${f.name}</td>
-              <td style="font-size:.8rem">${sizeKB}</td>
-              <td style="font-size:.8rem">${dateStr}</td>
-              <td><button class="btn-danger" onclick="deleteStorageFile('${bucket}','${f.name}')">🗑️ Delete</button></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>`;
-  } catch(e){
-    statusEl.innerText = '❌ ' + e.message;
-  }
-}
-
-async function deleteStorageFile(bucket, fileName){
-  if(!confirm(`"${fileName}" delete karna chahte hain?`)) return;
-  const sb = getSB();
-  if(!sb){ showToast('❌ Supabase connect nahi hua'); return; }
-  showToast('⏳ Delete ho raha hai...');
-  const { error } = await sb.storage.from(bucket).remove([fileName]);
-  if(error){ showToast('❌ Delete nahi hua: ' + error.message); return; }
-  showToast('✅ File delete ho gayi!');
-  loadStorageFiles(bucket); // Refresh list
 }
 
 // =================== CUSTOMIZE ===================
@@ -1063,6 +1024,67 @@ function switchTab(tab) {
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
 });
+
+
+// =================== STORAGE MANAGER ===================
+async function loadStorageFiles(bucket){
+  // Saved key field mein show karo
+  const savedKey = localStorage.getItem('sb_service_key') || '';
+  if(savedKey) document.getElementById('sb-service-key').value = savedKey;
+
+  const sb = getSBAdmin() || getSB();
+  if(!sb){ showToast('❌ Supabase connect nahi hua'); return; }
+  const statusEl = document.getElementById('storage-status');
+  const listEl = document.getElementById('storage-list');
+  statusEl.innerText = '⏳ Files load ho rahi hain...';
+  listEl.innerHTML = '';
+  try {
+    const { data, error } = await sb.storage.from(bucket).list('', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
+    if(error){ statusEl.innerText = '❌ Error: ' + error.message; return; }
+    const files = (data || []).filter(f => f.name && f.name !== '.emptyFolderPlaceholder');
+    statusEl.innerText = '✅ ' + bucket + ' — ' + files.length + ' file(s)';
+    if(files.length === 0){
+      listEl.innerHTML = '<div style="color:var(--text3);padding:1rem">Koi file nahi mili.</div>';
+      return;
+    }
+    listEl.innerHTML = '<table><thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead><tbody>' +
+      files.map(function(f){
+        const urlData = sb.storage.from(bucket).getPublicUrl(f.name);
+        const url = urlData.data.publicUrl;
+        const isPdf = f.name.toLowerCase().endsWith('.pdf');
+        const sizeKB = f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1)+' KB' : '—';
+        const preview = isPdf
+          ? '<a href="'+url+'" target="_blank" style="color:var(--secondary)">📄 Open</a>'
+          : '<img src="'+url+'" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.outerHTML='🖼️'">';
+        let dateStr = '—';
+        const raw = f.created_at || f.updated_at || (f.metadata && f.metadata.lastModified);
+        if(raw){
+          const d = new Date(raw);
+          const date = d.toLocaleDateString('en-PK',{day:'2-digit',month:'2-digit',year:'numeric'});
+          const time = d.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+          dateStr = '<span style="color:var(--text)">'+date+'</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 '+time+'</span>';
+        }
+        return '<tr><td>'+preview+'</td><td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+f.name+'">'+f.name+'</td><td style="font-size:.8rem">'+sizeKB+'</td><td style="font-size:.8rem">'+dateStr+'</td><td><button class="btn-danger" onclick="deleteStorageFile('' + bucket + '',''+f.name+'')" >🗑️ Delete</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  } catch(e){
+    statusEl.innerText = '❌ ' + e.message;
+  }
+}
+
+async function deleteStorageFile(bucket, fileName){
+  if(!confirm(' + fileName +  delete karna chahte hain?')) return;
+  const sb = getSBAdmin();
+  if(!sb){
+    showToast('❌ Service Key set karein! Storage tab mein upar field mein daalen.');
+    document.getElementById('sb-service-key').focus();
+    return;
+  }
+  showToast('⏳ Delete ho raha hai...');
+  const { error } = await sb.storage.from(bucket).remove([fileName]);
+  if(error){ showToast('❌ Delete nahi hua: ' + error.message); return; }
+  showToast('✅ File delete ho gayi!');
+  loadStorageFiles(bucket);
+}
 
 // =================== UTILS ===================
 function showToast(msg){
