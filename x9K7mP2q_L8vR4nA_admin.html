@@ -792,7 +792,7 @@ async function loadStorageFiles(bucket){
     }
     listEl.innerHTML = `
       <table>
-        <thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>Action</th></tr></thead>
+        <thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead>
         <tbody>
           ${files.map(f => {
             const { data: urlData } = sb.storage.from(bucket).getPublicUrl(f.name);
@@ -802,10 +802,20 @@ async function loadStorageFiles(bucket){
             const preview = isPdf
               ? `<a href="${url}" target="_blank" style="color:var(--secondary)">📄 Open</a>`
               : `<img src="${url}" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.outerHTML='🖼️'">`;
+            // Date/time format
+            let dateStr = '—';
+            const raw = f.created_at || f.updated_at || f.metadata?.lastModified;
+            if(raw){
+              const d = new Date(raw);
+              const date = d.toLocaleDateString('ur-PK', {day:'2-digit', month:'2-digit', year:'numeric'});
+              const time = d.toLocaleTimeString('en-PK', {hour:'2-digit', minute:'2-digit', hour12:true});
+              dateStr = `<span style="color:var(--text)">${date}</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 ${time}</span>`;
+            }
             return `<tr>
               <td>${preview}</td>
-              <td style="font-size:.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.name}">${f.name}</td>
+              <td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.name}">${f.name}</td>
               <td style="font-size:.8rem">${sizeKB}</td>
+              <td style="font-size:.8rem">${dateStr}</td>
               <td><button class="btn-danger" onclick="deleteStorageFile('${bucket}','${f.name}')">🗑️ Delete</button></td>
             </tr>`;
           }).join('')}
