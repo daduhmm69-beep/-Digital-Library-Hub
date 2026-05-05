@@ -520,7 +520,7 @@ function saveServiceKey(){
 }
 
 // =================== CONFIG ===================
-let ADMIN_PASS = localStorage.getItem('admin_pass') || 'admin123';
+let ADMIN_PASS = 'admin123'; // Password yahan change karein
 let GH_TOKEN = localStorage.getItem('gh_token') || '';
 let GH_REPO = localStorage.getItem('gh_repo') || 'nouman106/-Digital-Library-Hub';
 let allBooks = [];
@@ -536,8 +536,10 @@ function doLogin(){
     document.getElementById('gh-repo').value = GH_REPO;
     loadBooks();
   } else {
-    document.getElementById('login-err').style.display = 'block';
-    setTimeout(()=>document.getElementById('login-err').style.display='none', 2000);
+    const errEl = document.getElementById('login-err');
+    errEl.style.display = 'block';
+    errEl.innerText = '❌ Galat password! Sahi password: admin123';
+    setTimeout(()=>errEl.style.display='none', 4000);
   }
 }
 
@@ -1098,4 +1100,3 @@ function esc(s){ if(!s)return''; return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<
 </script>
 </body>
 </html>
-
