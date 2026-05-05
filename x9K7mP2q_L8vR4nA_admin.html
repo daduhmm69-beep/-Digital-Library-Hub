@@ -91,7 +91,7 @@ th{color:var(--text2)}
       <button class="tab-btn" data-tab="add-book">➕ Add Book</button>
       <button class="tab-btn" data-tab="storage">🗂️ Storage</button>
       <button class="tab-btn cust-tab" data-tab="customize" style="border:2px solid #7c3aed;color:#a78bfa">🎨 Customize</button>
-      <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+      <button class="tab-btn" data-tab="password">🔑 Password</button>
     </div>
 
     <div id="tab-dashboard" class="tab-pane active">
@@ -111,7 +111,7 @@ th{color:var(--text2)}
           <button class="btn" onclick="switchTab('add-book')">➕ Nayi Kitab</button>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr><th>Cover</th><th>Naam</th><th>Author</th><th>Category</th><th>Price</th><th>Access</th><th>🖼️ Cover URL</th><th>📄 PDF URL</th><th>Actions</th></tr></thead>
+          <table><thead><tr><th>Cover</th><th>Naam</th><th>Author</th><th>Category</th><th>Price</th><th>Access</th><th>Actions</th></tr></thead>
           <tbody id="books-tbody"></tbody></table>
         </div>
       </div>
@@ -161,6 +161,28 @@ th{color:var(--text2)}
           <div class="field"><label><input type="checkbox" id="b-allow-access" checked> ✅ Website pe dikhao</label></div>
           <div class="field"><label><input type="checkbox" id="b-allow-download" checked> 📥 Download Allow</label></div>
         </div>
+        
+        <div style="background:var(--bg3);padding:1rem;border-radius:12px;margin-top:1rem">
+          <h4 style="margin-bottom:.8rem;color:var(--secondary)">🎨 Kitab Ki Styling (Optional)</h4>
+          <div class="form-row">
+            <div class="field"><label>Background Color</label><input type="color" id="b-bg-color" value="#0a0a1a"></div>
+            <div class="field"><label>Text Color</label><input type="color" id="b-text-color" value="#eeeeee"></div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label>Reader Font</label>
+              <select id="b-reader-font">
+                <option value="serif">Serif (Classical)</option>
+                <option value="sans-serif">Sans Serif (Modern)</option>
+                <option value="'Noto Nastaliq Urdu',serif">Urdu Font</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Wallpaper URL</label>
+              <input id="b-wallpaper-url" placeholder="https://...">
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:1rem;margin-top:1rem">
           <button class="btn" onclick="saveBook()">💾 Save Karein</button>
           <button class="btn-outline" onclick="clearForm()">🔄 Reset</button>
@@ -171,12 +193,30 @@ th{color:var(--text2)}
     <!-- ═══════════════════════════════════════════════ -->
     <!-- 🎨 CUSTOMIZE TAB                                -->
     <!-- ═══════════════════════════════════════════════ -->
+    <style>
+.theme-presets{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.2rem}
+.preset-btn{padding:8px 14px;border-radius:20px;border:2px solid transparent;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.preset-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+</style>
     <div id="tab-customize" class="tab-pane">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
         <h2 style="color:var(--primary)">🎨 Site Customize</h2>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
           <button class="btn" onclick="previewCustomize()">👁️ Preview</button>
           <button class="btn" onclick="saveCustomize()">💾 Save & Publish</button>
+        </div>
+      </div>
+
+      <!-- PRESET THEMES -->
+      <div class="card">
+        <h3 style="margin-bottom:1rem;color:var(--secondary)">⚡ Taiyar Themes (One-Click)</h3>
+        <div class="theme-presets">
+          <button class="preset-btn" style="background:#d8f3dc;color:#2d6a4f" onclick="applyPreset('green')">🌿 Sabz</button>
+          <button class="preset-btn" style="background:#dbeafe;color:#1e40af" onclick="applyPreset('blue')">💙 Neela</button>
+          <button class="preset-btn" style="background:#ede9fe;color:#6d28d9" onclick="applyPreset('purple')">💜 Baingani</button>
+          <button class="preset-btn" style="background:#fce7f3;color:#be185d" onclick="applyPreset('pink')">🌸 Gulabi</button>
+          <button class="preset-btn" style="background:#ffedd5;color:#c2410c" onclick="applyPreset('orange')">🔥 Narangi</button>
+          <button class="preset-btn" style="background:#1e1e2e;color:#cdd6f4" onclick="applyPreset('dark')">🌙 Dark Mode</button>
         </div>
       </div>
 
@@ -464,43 +504,51 @@ th{color:var(--text2)}
     </div>
     <!-- ═══════════════════════════════════════════════ -->
 
-    <div id="tab-storage" class="tab-pane">
-
-      <div class="card">
-        <h3>📦 Storage Manager</h3>
-        <p style="color:var(--text2);margin-top:.5rem">Supabase Storage mein PDF aur Cover files:</p>
+    <div id="tab-password" class="tab-pane">
+      <div class="card" style="max-width:400px">
+        <h3>🔑 Password Tabdeel Karein</h3>
         <br>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
-          <button class="btn" onclick="loadStorageFiles('books-pdf')">📄 PDF Files Dekhen</button>
-          <button class="btn" onclick="loadStorageFiles('covers')">🖼️ Cover Images Dekhen</button>
-          <button class="btn-outline" onclick="exportBooks()" style="color:var(--secondary);border-color:var(--secondary)">📤 Books JSON Export</button>
+        <div class="field" style="margin-bottom:.8rem">
+          <label>Purana Password</label>
+          <input type="password" id="old-pass" placeholder="Purana password...">
         </div>
-        <div id="storage-status" style="color:var(--text2);font-size:.9rem;margin-bottom:.5rem"></div>
-        <div id="storage-list" style="overflow-x:auto"></div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label>Naya Password</label>
+          <input type="password" id="new-pass" placeholder="Naya password...">
+        </div>
+        <div class="field" style="margin-bottom:1rem">
+          <label>Naya Password Dobara</label>
+          <input type="password" id="confirm-pass" placeholder="Dobara likhein...">
+        </div>
+        <button class="btn" onclick="changePassword()">🔒 Password Tabdeel Karein</button>
       </div>
     </div>
 
-    <div id="tab-settings" class="tab-pane">
+    <div id="tab-storage" class="tab-pane">
       <div class="card">
-        <h3 style="color:var(--secondary);margin-bottom:1rem">🔐 Password Change Karein</h3>
-        <div class="form-row">
-          <div class="field">
-            <label>Maujuda Password (Current)</label>
-            <input type="password" id="pass-current" placeholder="Purana password">
-          </div>
+        <h3>📦 GitHub Storage</h3>
+        <p style="color:var(--text2);margin-top:.5rem">Aapki files GitHub repo mein store hoti hain:</p>
+        <br>
+        <div style="background:var(--bg3);padding:1rem;border-radius:8px;font-family:monospace;font-size:.85rem;color:var(--secondary)">
+          PDF files: github.com/<span id="repo-display">nouman106/-Digital-Library-Hub</span>/books-pdf/<br>
+          Cover images: github.com/<span class="repo-display2">nouman106/-Digital-Library-Hub</span>/covers/
         </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Naya Password</label>
-            <input type="password" id="pass-new" placeholder="Naya password (kam az kam 4 harf)">
-          </div>
-          <div class="field">
-            <label>Naya Password Dobara</label>
-            <input type="password" id="pass-confirm" placeholder="Confirm naya password">
-          </div>
+        <br>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <button class="btn" onclick="fetchStorageFiles()">🔄 Storage Scan Karein</button>
+          <button class="btn-outline" onclick="exportBooks()">📤 Books JSON Export</button>
         </div>
-        <button class="btn" onclick="changePassword()" style="margin-top:.5rem">🔐 Password Tabdeel Karein</button>
-        <div id="pass-msg" style="margin-top:.8rem;font-size:.9rem"></div>
+      </div>
+
+      <div class="card" id="storage-list-card" style="display:none">
+        <h3>📂 Storage Files (Unlisted)</h3>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:1rem">Yeh files storage mein hain magar books.json mein nahi hain. Ek click se live karein!</p>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>File Name</th><th>Type</th><th>Action</th></tr></thead>
+            <tbody id="storage-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -513,17 +561,10 @@ th{color:var(--text2)}
 // =================== SUPABASE INIT ===================
 const SUPABASE_URL = 'https://ykmsizkprilhidqvxaqq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UNOPedCOLNaCz878UCdo3w_5dnM-Gp-';
-let _sb = null, _sbAdmin = null;
-
+let _sb = null;
 function getSB(){
   if(_sb) return _sb;
   if(window.supabase){ _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return _sb; }
-  return null;
-}
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbXNpemtwcmlsaGlkcXZ4YXFxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzY5MjUyMywiZXhwIjoyMDkzMjY4NTIzfQ.dT0-qvsfQqhogsgPjKdzZqYRAd5sqARZ_7UHFBERguU';
-function getSBAdmin(){
-  if(_sbAdmin) return _sbAdmin;
-  if(window.supabase){ _sbAdmin = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY); return _sbAdmin; }
   return null;
 }
 
@@ -544,16 +585,29 @@ function doLogin(){
     document.getElementById('gh-repo').value = GH_REPO;
     loadBooks();
   } else {
-    const errEl = document.getElementById('login-err');
-    errEl.style.display = 'block';
-    errEl.innerText = '❌ Galat password! Sahi password: admin123';
-    setTimeout(()=>errEl.style.display='none', 4000);
+    document.getElementById('login-err').style.display = 'block';
+    setTimeout(()=>document.getElementById('login-err').style.display='none', 2000);
   }
 }
 
 function logout(){
   document.getElementById('admin-panel').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+}
+
+function changePassword(){
+  const old = document.getElementById('old-pass').value;
+  const nw = document.getElementById('new-pass').value;
+  const conf = document.getElementById('confirm-pass').value;
+  if(old !== ADMIN_PASS){ showToast('❌ Purana password galat hai!'); return; }
+  if(nw.length < 4){ showToast('❌ Password kam az kam 4 characters ka hona chahiye!'); return; }
+  if(nw !== conf){ showToast('❌ Naya password match nahi kar raha!'); return; }
+  ADMIN_PASS = nw;
+  localStorage.setItem('admin_pass', nw);
+  document.getElementById('old-pass').value = '';
+  document.getElementById('new-pass').value = '';
+  document.getElementById('confirm-pass').value = '';
+  showToast('✅ Password tabdeel ho gaya!');
 }
 
 // =================== GITHUB CONFIG ===================
@@ -606,16 +660,6 @@ function renderBooksTable(){
       <td>${b.category||'-'}</td>
       <td>${b.price==0||b.price=='0'?'🆓 Muft':'Rs.'+b.price}</td>
       <td>${b.allow_access!==false?'✅':'❌'}</td>
-      <td style="font-size:.75rem;max-width:160px">
-        ${b.cover_url
-          ? `<a href="${b.cover_url}" target="_blank" style="color:var(--secondary);word-break:break-all">${b.cover_url.length>40?b.cover_url.substring(0,40)+'...':b.cover_url}</a>`
-          : '<span style="color:var(--text3)">—</span>'}
-      </td>
-      <td style="font-size:.75rem;max-width:160px">
-        ${b.pdf_url
-          ? `<a href="${b.pdf_url}" target="_blank" style="color:var(--secondary);word-break:break-all">${b.pdf_url.length>40?b.pdf_url.substring(0,40)+'...':b.pdf_url}</a>`
-          : '<span style="color:var(--text3)">—</span>'}
-      </td>
       <td>
         <button class="btn-outline" onclick="editBook(${i})" style="margin-right:4px">✏️</button>
         <button class="btn-danger" onclick="deleteBook(${i})">🗑️</button>
@@ -641,6 +685,10 @@ async function saveBook(){
     description: document.getElementById('b-desc').value.trim(),
     allow_access: document.getElementById('b-allow-access').checked,
     allow_download: document.getElementById('b-allow-download').checked,
+    bg_color: document.getElementById('b-bg-color').value,
+    text_color: document.getElementById('b-text-color').value,
+    reader_font: document.getElementById('b-reader-font').value,
+    wallpaper_url: document.getElementById('b-wallpaper-url').value.trim(),
   };
 
   if(id){
@@ -779,17 +827,16 @@ function editBook(idx){
   document.getElementById('b-desc').value = b.description||'';
   document.getElementById('b-allow-access').checked = b.allow_access!==false;
   document.getElementById('b-allow-download').checked = b.allow_download!==false;
+  document.getElementById('b-bg-color').value = b.bg_color || '#0a0a1a';
+  document.getElementById('b-text-color').value = b.text_color || '#eeeeee';
+  document.getElementById('b-reader-font').value = b.reader_font || 'serif';
+  document.getElementById('b-wallpaper-url').value = b.wallpaper_url || '';
   document.getElementById('form-title').innerText = '✏️ Book Edit Karein';
   switchTab('add-book');
 }
 
 async function deleteBook(idx){
   if(!confirm('Yeh kitab delete karna chahte hain?')) return;
-  if(!GH_TOKEN){
-    showToast('❌ Pehle GitHub Token set karein!');
-    document.getElementById('github-setup').scrollIntoView({behavior:'smooth'});
-    return;
-  }
   allBooks.splice(idx, 1);
   showToast('⏳ Delete ho raha hai...');
   let ok = await saveBooksToGithub();
@@ -803,6 +850,10 @@ function clearForm(){
   document.getElementById('b-price').value = '0';
   document.getElementById('b-allow-access').checked = true;
   document.getElementById('b-allow-download').checked = true;
+  document.getElementById('b-bg-color').value = '#0a0a1a';
+  document.getElementById('b-text-color').value = '#eeeeee';
+  document.getElementById('b-reader-font').value = 'serif';
+  document.getElementById('b-wallpaper-url').value = '';
   document.getElementById('form-title').innerText = '➕ Nayi Kitab Add Karein';
   document.getElementById('pdf-progress').innerText = '';
   document.getElementById('cover-progress').innerText = '';
@@ -816,6 +867,64 @@ function exportBooks(){
   a.download = 'books.json';
   a.click();
   showToast('✅ books.json download ho rahi hai!');
+}
+
+async function fetchStorageFiles(){
+  if(!GH_TOKEN){ showToast('❌ GitHub token set karein!'); return; }
+  showToast('⏳ Storage scan ho raha hai...');
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/books-pdf`, {
+      headers: { 'Authorization': `token ${GH_TOKEN}` }
+    });
+    if(!res.ok) throw new Error('Storage access failed');
+    const files = await res.json();
+    
+    // Filter files that are NOT in allBooks
+    const unlisted = files.filter(f => f.name.endsWith('.pdf') && !allBooks.some(b => b.pdf_url && b.pdf_url.includes(f.name)));
+    
+    const tbody = document.getElementById('storage-tbody');
+    document.getElementById('storage-list-card').style.display = 'block';
+    
+    if(unlisted.length === 0){
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem">Koi nayi unlisted file nahi mili.</td></tr>';
+    } else {
+      tbody.innerHTML = unlisted.map(f => `
+        <tr>
+          <td>${f.name}</td>
+          <td>PDF</td>
+          <td><button class="btn" style="font-size:.75rem;padding:4px 10px" onclick="makeLiveFromStorage('${f.name}', '${f.download_url}')">⚡ Live Karein</button></td>
+        </tr>
+      `).join('');
+    }
+    showToast('✅ Scan mukammal!');
+  } catch(e){
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
+async function makeLiveFromStorage(name, url){
+  const title = name.replace('.pdf', '').replace(/_/g, ' ');
+  const newBook = {
+    id: Date.now(),
+    title: title,
+    author: 'Unknown',
+    category: 'other',
+    price: 0,
+    pdf_url: url,
+    cover_url: '',
+    description: 'Storage se auto-added kitab.',
+    allow_access: true,
+    allow_download: true
+  };
+  
+  allBooks.push(newBook);
+  showToast('⏳ GitHub pe live ho raha hai...');
+  const ok = await saveBooksToGithub();
+  if(ok){
+    showToast('✅ ' + title + ' live ho gayi!');
+    renderAll();
+    fetchStorageFiles(); // Refresh list
+  }
 }
 
 // =================== CUSTOMIZE ===================
@@ -835,6 +944,27 @@ function toggleBgOpts(page) {
   const imgEl = document.getElementById(`c-${page}ImgOpts`);
   if (gradEl) gradEl.style.display = type === 'gradient' ? 'block' : 'none';
   if (imgEl) imgEl.style.display = type === 'image' ? 'block' : 'none';
+}
+
+function applyPreset(theme){
+  const themes = {
+    green: { p: '#2d6a4f', s: '#b7791f', bg: '#f8f6f1', h1: '#2d6a4f', h2: '#40916c' },
+    blue: { p: '#1e40af', s: '#0369a1', bg: '#f0f9ff', h1: '#1e3a5f', h2: '#2563eb' },
+    purple: { p: '#6d28d9', s: '#7c3aed', bg: '#f5f3ff', h1: '#4c1d95', h2: '#7c3aed' },
+    pink: { p: '#be185d', s: '#db2777', bg: '#fdf2f8', h1: '#be185d', h2: '#f472b6' },
+    orange: { p: '#c2410c', s: '#ea580c', bg: '#fff7ed', h1: '#c2410c', h2: '#f97316' },
+    dark: { p: '#a78bfa', s: '#22d3ee', bg: '#0a0a1a', h1: '#0d0928', h2: '#1a1050' }
+  };
+  const t = themes[theme];
+  if(!t) return;
+  
+  document.getElementById('c-primary').value = t.p; document.getElementById('c-primaryT').value = t.p;
+  document.getElementById('c-secondary').value = t.s; document.getElementById('c-secondaryT').value = t.s;
+  document.getElementById('c-homeBgColor').value = t.bg; document.getElementById('c-homeBgColorT').value = t.bg;
+  document.getElementById('c-heroG1').value = t.h1; document.getElementById('c-heroG1T').value = t.h1;
+  document.getElementById('c-heroG2').value = t.h2; document.getElementById('c-heroG2T').value = t.h2;
+  
+  showToast('✅ ' + theme + ' theme apply ho gaya! Save karein.');
 }
 
 function updateAnnPreview() {
@@ -1044,105 +1174,6 @@ function switchTab(tab) {
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
 });
-
-
-// =================== STORAGE MANAGER ===================
-async function loadStorageFiles(bucket){
-  const sb = getSBAdmin() || getSB();
-  if(!sb){ showToast('❌ Supabase connect nahi hua'); return; }
-  const statusEl = document.getElementById('storage-status');
-  const listEl = document.getElementById('storage-list');
-  statusEl.innerText = '⏳ Files load ho rahi hain...';
-  listEl.innerHTML = '';
-  try {
-    const { data, error } = await sb.storage.from(bucket).list('', { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
-    if(error){ statusEl.innerText = '❌ Error: ' + error.message; return; }
-    const files = (data || []).filter(f => f.name && f.name !== '.emptyFolderPlaceholder');
-    statusEl.innerText = '✅ ' + bucket + ' — ' + files.length + ' file(s)';
-    if(files.length === 0){
-      listEl.innerHTML = '<div style="color:var(--text3);padding:1rem">Koi file nahi mili.</div>';
-      return;
-    }
-    let rows = '';
-    for(const f of files){
-      const urlData = sb.storage.from(bucket).getPublicUrl(f.name);
-      const url = urlData.data.publicUrl;
-      const isPdf = f.name.toLowerCase().endsWith('.pdf');
-      const sizeKB = f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1)+' KB' : '—';
-      const preview = isPdf
-        ? `<a href="${url}" target="_blank" style="color:var(--secondary)">📄 Open</a>`
-        : `<img src="${url}" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.style.display='none'">`;
-      let dateStr = '—';
-      const raw = f.created_at || f.updated_at || (f.metadata && f.metadata.lastModified);
-      if(raw){
-        const d = new Date(raw);
-        const date = d.toLocaleDateString('en-PK',{day:'2-digit',month:'2-digit',year:'numeric'});
-        const time = d.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
-        dateStr = `<span style="color:var(--text)">${date}</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 ${time}</span>`;
-      }
-      const safeName = f.name.replace(/'/g, "\'");
-      rows += `<tr>
-        <td>${preview}</td>
-        <td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.name}">${f.name}</td>
-        <td style="font-size:.8rem">${sizeKB}</td>
-        <td style="font-size:.8rem">${dateStr}</td>
-        <td><button class="btn-danger" onclick="deleteStorageFile('${bucket}','${safeName}')">🗑️ Delete</button></td>
-      </tr>`;
-    }
-    listEl.innerHTML = `<table>
-      <thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-  } catch(e){
-    statusEl.innerText = '❌ ' + e.message;
-  }
-}
-
-async function deleteStorageFile(bucket, fileName){
-  if(!confirm('"' + fileName + '" delete karna chahte hain?')) return;
-  const sb = getSBAdmin();
-  if(!sb){
-    showToast('❌ Service key load nahi hui, page reload karein!');
-    return;
-  }
-  showToast('⏳ Delete ho raha hai...');
-  const { error } = await sb.storage.from(bucket).remove([fileName]);
-  if(error){ showToast('❌ Delete nahi hua: ' + error.message); return; }
-  showToast('✅ File delete ho gayi!');
-  loadStorageFiles(bucket);
-}
-
-// =================== SETTINGS ===================
-function changePassword(){
-  const current = document.getElementById('pass-current').value;
-  const newPass = document.getElementById('pass-new').value;
-  const confirm = document.getElementById('pass-confirm').value;
-  const msgEl = document.getElementById('pass-msg');
-
-  if(current !== ADMIN_PASS){
-    msgEl.style.color = '#f44336';
-    msgEl.innerText = '❌ Maujuda password galat hai!';
-    return;
-  }
-  if(newPass.length < 4){
-    msgEl.style.color = '#f44336';
-    msgEl.innerText = '❌ Naya password kam az kam 4 harf ka hona chahiye!';
-    return;
-  }
-  if(newPass !== confirm){
-    msgEl.style.color = '#f44336';
-    msgEl.innerText = '❌ Dono naye password same nahi hain!';
-    return;
-  }
-  ADMIN_PASS = newPass;
-  localStorage.setItem('admin_pass', newPass);
-  msgEl.style.color = '#4caf50';
-  msgEl.innerText = '✅ Password kamiyabi se tabdeel ho gaya!';
-  document.getElementById('pass-current').value = '';
-  document.getElementById('pass-new').value = '';
-  document.getElementById('pass-confirm').value = '';
-  showToast('✅ Password update ho gaya!');
-}
 
 // =================== UTILS ===================
 function showToast(msg){
