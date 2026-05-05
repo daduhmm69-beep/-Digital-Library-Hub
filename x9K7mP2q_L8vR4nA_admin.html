@@ -141,7 +141,10 @@ th{color:var(--text2)}
         <div class="form-row single">
           <div class="field">
             <label>PDF File Upload karein</label>
-            <input type="file" id="pdf-file" accept=".pdf" onchange="uploadToGithub(this,'b-pdf-url','books-pdf')">
+            <div style="display:flex;gap:.5rem">
+              <input type="file" id="pdf-file" accept=".pdf" onchange="uploadToGithub(this,'b-pdf-url','books-pdf')" style="flex:1">
+              <button class="btn" onclick="openFileExplorer('books-pdf', 'b-pdf-url')" style="white-space:nowrap">📂 Browse Storage</button>
+            </div>
             <input id="b-pdf-url" placeholder="Ya seedha URL paste karein" style="margin-top:.5rem">
             <div id="pdf-progress" style="color:var(--secondary);font-size:.85rem;margin-top:.3rem"></div>
           </div>
@@ -149,7 +152,10 @@ th{color:var(--text2)}
         <div class="form-row single">
           <div class="field">
             <label>Cover Image Upload karein</label>
-            <input type="file" id="cover-file" accept="image/*" onchange="uploadToGithub(this,'b-cover-url','covers')">
+            <div style="display:flex;gap:.5rem">
+              <input type="file" id="cover-file" accept="image/*" onchange="uploadToGithub(this,'b-cover-url','covers')" style="flex:1">
+              <button class="btn" onclick="openFileExplorer('covers', 'b-cover-url')" style="white-space:nowrap">📂 Browse Storage</button>
+            </div>
             <input id="b-cover-url" placeholder="Ya seedha cover URL paste karein" style="margin-top:.5rem">
             <div id="cover-progress" style="color:var(--secondary);font-size:.85rem;margin-top:.3rem"></div>
           </div>
@@ -179,7 +185,10 @@ th{color:var(--text2)}
             </div>
             <div class="field">
               <label>Wallpaper URL</label>
-              <input id="b-wallpaper-url" placeholder="https://...">
+              <div style="display:flex;gap:.5rem">
+                <input id="b-wallpaper-url" placeholder="https://..." style="flex:1">
+                <button class="btn" onclick="openFileExplorer('covers', 'b-wallpaper-url')" style="white-space:nowrap">📂 Browse</button>
+              </div>
             </div>
           </div>
         </div>
@@ -556,6 +565,19 @@ th{color:var(--text2)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- File Explorer Modal -->
+<div id="explorer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10000;align-items:center;justify-content:center;padding:1rem">
+  <div class="card" style="width:100%;max-width:600px;max-height:80vh;overflow-y:auto;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 id="explorer-title">📂 File Explorer</h3>
+      <button class="btn-danger" onclick="closeFileExplorer()">✕</button>
+    </div>
+    <div id="explorer-content" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem">
+      <!-- Files will appear here -->
+    </div>
+  </div>
+</div>
 
 <script>
 // =================== SUPABASE INIT ===================
@@ -950,6 +972,50 @@ async function makeLiveFromStorage(name, url){
     renderAll();
     renderStorageTable(); // Refresh list
   }
+}
+
+let currentTargetId = '';
+
+async function openFileExplorer(folder, targetId){
+  currentTargetId = targetId;
+  const modal = document.getElementById('explorer-modal');
+  const content = document.getElementById('explorer-content');
+  const title = document.getElementById('explorer-title');
+  
+  modal.style.display = 'flex';
+  title.innerText = '📂 Loading ' + folder + '...';
+  content.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem">⏳ Scanning GitHub Storage...</div>';
+  
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${folder}`, {
+      headers: { 'Authorization': `token ${GH_TOKEN}` }
+    });
+    if(!res.ok) throw new Error('Folder not found');
+    const files = await res.json();
+    
+    title.innerText = '📂 Storage: ' + folder;
+    content.innerHTML = files.map(f => {
+      const isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(f.name);
+      return `
+        <div onclick="selectFile('${f.download_url}')" style="background:var(--bg3);padding:.5rem;border-radius:8px;cursor:pointer;text-align:center;border:1px solid var(--border)">
+          ${isImg ? `<img src="${f.download_url}" style="width:100%;height:80px;object-fit:cover;border-radius:4px;margin-bottom:.5rem">` : `<div style="font-size:2rem;margin-bottom:.5rem">📄</div>`}
+          <div style="font-size:.7rem;word-break:break-all;color:var(--text)">${f.name}</div>
+        </div>
+      `;
+    }).join('');
+  } catch(e){
+    content.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#f44336">❌ Error: ${e.message}</div>`;
+  }
+}
+
+function selectFile(url){
+  document.getElementById(currentTargetId).value = url;
+  closeFileExplorer();
+  showToast('✅ File selected!');
+}
+
+function closeFileExplorer(){
+  document.getElementById('explorer-modal').style.display = 'none';
 }
 
 // =================== CUSTOMIZE ===================
