@@ -183,12 +183,14 @@ th{color:var(--text2)}
                 <option value="'Noto Nastaliq Urdu',serif">Urdu Font</option>
               </select>
             </div>
-            <div class="field">
-              <label>Wallpaper URL</label>
+                        <div class="field">
+              <label>Wallpaper Image Upload karein</label>
               <div style="display:flex;gap:.5rem">
-                <input id="b-wallpaper-url" placeholder="https://..." style="flex:1">
+                <input type="file" id="wallpaper-file" accept="image/*" onchange="uploadToGithub(this,'b-wallpaper-url','covers')" style="flex:1">
                 <button class="btn" onclick="openFileExplorer('covers', 'b-wallpaper-url')" style="white-space:nowrap">📂 Browse</button>
               </div>
+              <input id="b-wallpaper-url" placeholder="Ya seedha wallpaper URL paste karein" style="margin-top:.5rem">
+              <div id="wallpaper-progress" style="color:var(--secondary);font-size:.85rem;margin-top:.3rem"></div>
             </div>
           </div>
         </div>
@@ -781,7 +783,9 @@ async function saveBooksToGithub(){
 async function uploadToGithub(input, targetId, folder){
   let file = input.files[0];
   if(!file) return;
-  let progressId = targetId === 'b-pdf-url' ? 'pdf-progress' : 'cover-progress';
+  let progressId = 'cover-progress';
+  if(targetId === 'b-pdf-url') progressId = 'pdf-progress';
+  if(targetId === 'b-wallpaper-url') progressId = 'wallpaper-progress';
   let prog = document.getElementById(progressId);
   prog.innerText = '⏳ Upload ho raha hai...';
 

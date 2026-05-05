@@ -75,8 +75,6 @@ footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border);
 <div id="toast" class="toast"></div>
 
 <script>
-const supabase = window.supabaseClient;
-
 function showToast(msg, isError = false) {
   const toast = document.getElementById('toast');
   toast.innerText = msg;
@@ -92,6 +90,11 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
   const message = document.getElementById('contactMessage').value.trim();
   if (!name || !email || !message) {
     showToast('براہ کرم تمام فیلڈز پُر کریں', true);
+    return;
+  }
+  const supabase = window.supabaseClient;
+  if (!supabase) {
+    showToast('سسٹم ابھی لوڈ ہو رہا ہے، براہ کرم ایک لمحہ انتظار کریں', true);
     return;
   }
   const { error } = await supabase.from('contact_messages').insert([{

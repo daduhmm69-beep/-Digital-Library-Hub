@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>KitabGhar — Ilm ki Duniya</title>
+<script src="site-config.js"></script>
 <style>
 :root{
   --bg:#0a0a1a;--bg2:#0f0f2a;--bg3:#13132e;
@@ -403,8 +404,8 @@ footer{background:rgba(10,10,26,.9);border-color:rgba(124,58,237,.2)}
 <nav>
   <div class="nav-inner">
     <div class="nav-logo" id="nav-logo">
-      <div class="logo-placeholder" id="logo-icon">📚</div>
-      <span id="site-name-nav">KitabGhar</span>
+      <div class="logo-placeholder kg-logo-text" id="logo-icon">📚</div><img class="kg-logo-img" style="display:none">
+      <span id="site-name-nav" class="kg-site-name">KitabGhar</span>
     </div>
     <div class="nav-search">
       <span class="search-icon">🔍</span>
@@ -420,7 +421,7 @@ footer{background:rgba(10,10,26,.9);border-color:rgba(124,58,237,.2)}
 </nav>
 
 <div class="hero" id="hero-section">
-  <h1 id="site-tagline">📚 Ilm ki Duniya Mein Khush Aamdeed</h1>
+  <h1 id="site-tagline" class="kg-tagline">📚 Ilm ki Duniya Mein Khush Aamdeed</h1>
   <p id="site-desc">Hazaron kitabein — Islamic, Educational, Motivational — sab ek jagah par</p>
 </div>
 
@@ -499,7 +500,7 @@ footer{background:rgba(10,10,26,.9);border-color:rgba(124,58,237,.2)}
     <a href="#about">Hamare Baare Mein</a>
     <a href="#features">Features</a>
   </div>
-  <span id="footer-copy">© 2024 KitabGhar — Tamam huqooq mahfooz hain</span>
+  <span id="footer-copy" class="kg-footer">© 2024 KitabGhar — Tamam huqooq mahfooz hain</span>
 </footer>
 
 <!-- BOOK READER OVERLAY -->
@@ -621,7 +622,18 @@ function blendHex(hex,blend,ratio){
 // ========== BOOKS ==========
 let allBooks=[],currentFilter='all',currentSearch='';
 async function loadBooks(){
-  allBooks=await dbGetAll('books');
+  try {
+    const res = await fetch('books.json?t=' + Date.now());
+    if (res.ok) {
+      allBooks = await res.json();
+    } else {
+      // Fallback to IndexedDB if books.json fails
+      allBooks = await dbGetAll('books');
+    }
+  } catch (e) {
+    console.error("Failed to load books.json, falling back to IndexedDB", e);
+    allBooks = await dbGetAll('books');
+  }
   updateStats();
   renderBooks();
 }
