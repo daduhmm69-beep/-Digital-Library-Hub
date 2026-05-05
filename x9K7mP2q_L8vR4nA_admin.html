@@ -465,15 +465,7 @@ th{color:var(--text2)}
     <!-- ═══════════════════════════════════════════════ -->
 
     <div id="tab-storage" class="tab-pane">
-      <div class="card" style="margin-bottom:1rem">
-        <h3>🔑 Supabase Service Key <span style="font-size:.75rem;color:var(--text2);font-weight:normal">(delete ke liye zaroori)</span></h3>
-        <p style="color:var(--text2);font-size:.85rem;margin:.5rem 0">Supabase → Project Settings → API → <strong>service_role</strong> key yahan paste karein:</p>
-        <div style="display:flex;gap:.5rem;align-items:center">
-          <input type="password" id="sb-service-key" placeholder="eyJ..." style="flex:1" value="">
-          <button class="btn" onclick="saveServiceKey()">💾 Save</button>
-        </div>
-        <div id="service-key-status" style="font-size:.8rem;margin-top:.4rem;color:var(--secondary)"></div>
-      </div>
+
       <div class="card">
         <h3>📦 Storage Manager</h3>
         <p style="color:var(--text2);margin-top:.5rem">Supabase Storage mein PDF aur Cover files:</p>
@@ -528,20 +520,11 @@ function getSB(){
   if(window.supabase){ _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); return _sb; }
   return null;
 }
+const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbXNpemtwcmlsaGlkcXZ4YXFxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzY5MjUyMywiZXhwIjoyMDkzMjY4NTIzfQ.dT0-qvsfQqhogsgPjKdzZqYRAd5sqARZ_7UHFBERguU';
 function getSBAdmin(){
-  const key = localStorage.getItem('sb_service_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbXNpemtwcmlsaGlkcXZ4YXFxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzY5MjUyMywiZXhwIjoyMDkzMjY4NTIzfQ.dT0-qvsfQqhogsgPjKdzZqYRAd5sqARZ_7UHFBERguU';
-  if(!key) return null;
   if(_sbAdmin) return _sbAdmin;
-  if(window.supabase){ _sbAdmin = window.supabase.createClient(SUPABASE_URL, key); return _sbAdmin; }
+  if(window.supabase){ _sbAdmin = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY); return _sbAdmin; }
   return null;
-}
-function saveServiceKey(){
-  const key = document.getElementById('sb-service-key').value.trim();
-  if(!key){ showToast('❌ Key empty hai'); return; }
-  localStorage.setItem('sb_service_key', key);
-  _sbAdmin = null; // reset so new client is created
-  document.getElementById('service-key-status').innerText = '✅ Key save ho gayi! Ab delete kaam karega.';
-  showToast('✅ Service key save ho gayi!');
 }
 
 // =================== CONFIG ===================
@@ -1055,9 +1038,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 // =================== STORAGE MANAGER ===================
 async function loadStorageFiles(bucket){
-  const savedKey = localStorage.getItem('sb_service_key') || '';
-  if(savedKey) document.getElementById('sb-service-key').value = savedKey;
-
   const sb = getSBAdmin() || getSB();
   if(!sb){ showToast('❌ Supabase connect nahi hua'); return; }
   const statusEl = document.getElementById('storage-status');
@@ -1112,8 +1092,7 @@ async function deleteStorageFile(bucket, fileName){
   if(!confirm('"' + fileName + '" delete karna chahte hain?')) return;
   const sb = getSBAdmin();
   if(!sb){
-    showToast('❌ Service Key set karein! Storage tab mein upar field mein daalen.');
-    document.getElementById('sb-service-key').focus();
+    showToast('❌ Service key load nahi hui, page reload karein!');
     return;
   }
   showToast('⏳ Delete ho raha hai...');
