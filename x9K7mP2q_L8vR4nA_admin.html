@@ -869,41 +869,63 @@ function exportBooks(){
   showToast('✅ books.json download ho rahi hai!');
 }
 
+let storageFiles = { pdf: [], covers: [] };
+
 async function fetchStorageFiles(){
   if(!GH_TOKEN){ showToast('❌ GitHub token set karein!'); return; }
   showToast('⏳ Storage scan ho raha hai...');
   try {
-    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/books-pdf`, {
+    // Scan PDFs
+    const resPdf = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/books-pdf`, {
       headers: { 'Authorization': `token ${GH_TOKEN}` }
     });
-    if(!res.ok) throw new Error('Storage access failed');
-    const files = await res.json();
+    storageFiles.pdf = resPdf.ok ? await resPdf.json() : [];
+
+    // Scan Covers
+    const resCov = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/covers`, {
+      headers: { 'Authorization': `token ${GH_TOKEN}` }
+    });
+    storageFiles.covers = resCov.ok ? await resCov.json() : [];
     
-    // Filter files that are NOT in allBooks
-    const unlisted = files.filter(f => f.name.endsWith('.pdf') && !allBooks.some(b => b.pdf_url && b.pdf_url.includes(f.name)));
-    
-    const tbody = document.getElementById('storage-tbody');
-    document.getElementById('storage-list-card').style.display = 'block';
-    
-    if(unlisted.length === 0){
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem">Koi nayi unlisted file nahi mili.</td></tr>';
-    } else {
-      tbody.innerHTML = unlisted.map(f => `
-        <tr>
-          <td>${f.name}</td>
-          <td>PDF</td>
-          <td><button class="btn" style="font-size:.75rem;padding:4px 10px" onclick="makeLiveFromStorage('${f.name}', '${f.download_url}')">⚡ Live Karein</button></td>
-        </tr>
-      `).join('');
-    }
+    renderStorageTable();
     showToast('✅ Scan mukammal!');
   } catch(e){
     showToast('❌ Error: ' + e.message);
   }
 }
 
+function renderStorageTable(){
+  const tbody = document.getElementById('storage-tbody');
+  document.getElementById('storage-list-card').style.display = 'block';
+  
+  // Only show PDFs that are NOT in allBooks
+  const unlistedPdf = storageFiles.pdf.filter(f => f.name.endsWith('.pdf') && !allBooks.some(b => b.pdf_url && b.pdf_url.includes(f.name)));
+  
+  if(unlistedPdf.length === 0){
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:1rem">Koi nayi unlisted PDF nahi mili.</td></tr>';
+  } else {
+    tbody.innerHTML = unlistedPdf.map(f => {
+      const baseName = f.name.replace('.pdf', '');
+      // Try to find a matching cover
+      const hasCover = storageFiles.covers.find(c => c.name.startsWith(baseName));
+      return `
+        <tr>
+          <td>${f.name}</td>
+          <td>PDF ${hasCover ? '<span style="color:var(--secondary);font-size:.7rem">(Cover Found)</span>' : ''}</td>
+          <td><button class="btn" style="font-size:.75rem;padding:4px 10px" onclick="makeLiveFromStorage('${f.name}', '${f.download_url}')">⚡ Live Karein</button></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
 async function makeLiveFromStorage(name, url){
-  const title = name.replace('.pdf', '').replace(/_/g, ' ');
+  const baseName = name.replace('.pdf', '');
+  const title = baseName.replace(/_/g, ' ');
+  
+  // Auto-match cover if exists
+  const matchingCover = storageFiles.covers.find(c => c.name.startsWith(baseName));
+  
   const newBook = {
     id: Date.now(),
     title: title,
@@ -911,19 +933,22 @@ async function makeLiveFromStorage(name, url){
     category: 'other',
     price: 0,
     pdf_url: url,
-    cover_url: '',
+    cover_url: matchingCover ? matchingCover.download_url : '',
     description: 'Storage se auto-added kitab.',
     allow_access: true,
-    allow_download: true
+    allow_download: true,
+    bg_color: '#0a0a1a',
+    text_color: '#eeeeee',
+    reader_font: 'serif'
   };
   
   allBooks.push(newBook);
   showToast('⏳ GitHub pe live ho raha hai...');
   const ok = await saveBooksToGithub();
   if(ok){
-    showToast('✅ ' + title + ' live ho gayi!');
+    showToast('✅ ' + title + ' live ho gayi!' + (matchingCover ? ' (Cover ke sath)' : ''));
     renderAll();
-    fetchStorageFiles(); // Refresh list
+    renderStorageTable(); // Refresh list
   }
 }
 
