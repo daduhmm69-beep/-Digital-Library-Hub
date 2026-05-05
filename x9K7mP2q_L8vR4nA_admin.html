@@ -111,7 +111,7 @@ th{color:var(--text2)}
           <button class="btn" onclick="switchTab('add-book')">➕ Nayi Kitab</button>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr><th>Cover</th><th>Naam</th><th>Author</th><th>Category</th><th>Price</th><th>Access</th><th>Actions</th></tr></thead>
+          <table><thead><tr><th>Cover</th><th>Naam</th><th>Author</th><th>Category</th><th>Price</th><th>Access</th><th>🖼️ Cover URL</th><th>📄 PDF URL</th><th>Actions</th></tr></thead>
           <tbody id="books-tbody"></tbody></table>
         </div>
       </div>
@@ -606,6 +606,16 @@ function renderBooksTable(){
       <td>${b.category||'-'}</td>
       <td>${b.price==0||b.price=='0'?'🆓 Muft':'Rs.'+b.price}</td>
       <td>${b.allow_access!==false?'✅':'❌'}</td>
+      <td style="font-size:.75rem;max-width:160px">
+        ${b.cover_url
+          ? `<a href="${b.cover_url}" target="_blank" style="color:var(--secondary);word-break:break-all">${b.cover_url.length>40?b.cover_url.substring(0,40)+'...':b.cover_url}</a>`
+          : '<span style="color:var(--text3)">—</span>'}
+      </td>
+      <td style="font-size:.75rem;max-width:160px">
+        ${b.pdf_url
+          ? `<a href="${b.pdf_url}" target="_blank" style="color:var(--secondary);word-break:break-all">${b.pdf_url.length>40?b.pdf_url.substring(0,40)+'...':b.pdf_url}</a>`
+          : '<span style="color:var(--text3)">—</span>'}
+      </td>
       <td>
         <button class="btn-outline" onclick="editBook(${i})" style="margin-right:4px">✏️</button>
         <button class="btn-danger" onclick="deleteBook(${i})">🗑️</button>
