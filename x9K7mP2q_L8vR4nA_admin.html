@@ -1030,7 +1030,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 // =================== STORAGE MANAGER ===================
 async function loadStorageFiles(bucket){
-  // Saved key field mein show karo
   const savedKey = localStorage.getItem('sb_service_key') || '';
   if(savedKey) document.getElementById('sb-service-key').value = savedKey;
 
@@ -1049,32 +1048,43 @@ async function loadStorageFiles(bucket){
       listEl.innerHTML = '<div style="color:var(--text3);padding:1rem">Koi file nahi mili.</div>';
       return;
     }
-    listEl.innerHTML = '<table><thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead><tbody>' +
-      files.map(function(f){
-        const urlData = sb.storage.from(bucket).getPublicUrl(f.name);
-        const url = urlData.data.publicUrl;
-        const isPdf = f.name.toLowerCase().endsWith('.pdf');
-        const sizeKB = f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1)+' KB' : '—';
-        const preview = isPdf
-          ? '<a href="'+url+'" target="_blank" style="color:var(--secondary)">📄 Open</a>'
-          : '<img src="'+url+'" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.outerHTML='🖼️'">';
-        let dateStr = '—';
-        const raw = f.created_at || f.updated_at || (f.metadata && f.metadata.lastModified);
-        if(raw){
-          const d = new Date(raw);
-          const date = d.toLocaleDateString('en-PK',{day:'2-digit',month:'2-digit',year:'numeric'});
-          const time = d.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
-          dateStr = '<span style="color:var(--text)">'+date+'</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 '+time+'</span>';
-        }
-        return '<tr><td>'+preview+'</td><td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+f.name+'">'+f.name+'</td><td style="font-size:.8rem">'+sizeKB+'</td><td style="font-size:.8rem">'+dateStr+'</td><td><button class="btn-danger" onclick="deleteStorageFile('' + bucket + '',''+f.name+'')" >🗑️ Delete</button></td></tr>';
-      }).join('') + '</tbody></table>';
+    let rows = '';
+    for(const f of files){
+      const urlData = sb.storage.from(bucket).getPublicUrl(f.name);
+      const url = urlData.data.publicUrl;
+      const isPdf = f.name.toLowerCase().endsWith('.pdf');
+      const sizeKB = f.metadata && f.metadata.size ? (f.metadata.size/1024).toFixed(1)+' KB' : '—';
+      const preview = isPdf
+        ? `<a href="${url}" target="_blank" style="color:var(--secondary)">📄 Open</a>`
+        : `<img src="${url}" style="width:40px;height:50px;object-fit:cover;border-radius:4px" onerror="this.style.display='none'">`;
+      let dateStr = '—';
+      const raw = f.created_at || f.updated_at || (f.metadata && f.metadata.lastModified);
+      if(raw){
+        const d = new Date(raw);
+        const date = d.toLocaleDateString('en-PK',{day:'2-digit',month:'2-digit',year:'numeric'});
+        const time = d.toLocaleTimeString('en-PK',{hour:'2-digit',minute:'2-digit',hour12:true});
+        dateStr = `<span style="color:var(--text)">${date}</span><br><span style="color:var(--secondary);font-size:.75rem">🕐 ${time}</span>`;
+      }
+      const safeName = f.name.replace(/'/g, "\'");
+      rows += `<tr>
+        <td>${preview}</td>
+        <td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.name}">${f.name}</td>
+        <td style="font-size:.8rem">${sizeKB}</td>
+        <td style="font-size:.8rem">${dateStr}</td>
+        <td><button class="btn-danger" onclick="deleteStorageFile('${bucket}','${safeName}')">🗑️ Delete</button></td>
+      </tr>`;
+    }
+    listEl.innerHTML = `<table>
+      <thead><tr><th>Preview</th><th>File Name</th><th>Size</th><th>📅 Upload Date & Time</th><th>Action</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   } catch(e){
     statusEl.innerText = '❌ ' + e.message;
   }
 }
 
 async function deleteStorageFile(bucket, fileName){
-  if(!confirm(' + fileName +  delete karna chahte hain?')) return;
+  if(!confirm('"' + fileName + '" delete karna chahte hain?')) return;
   const sb = getSBAdmin();
   if(!sb){
     showToast('❌ Service Key set karein! Storage tab mein upar field mein daalen.');
