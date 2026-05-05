@@ -91,6 +91,7 @@ th{color:var(--text2)}
       <button class="tab-btn" data-tab="add-book">➕ Add Book</button>
       <button class="tab-btn" data-tab="storage">🗂️ Storage</button>
       <button class="tab-btn cust-tab" data-tab="customize" style="border:2px solid #7c3aed;color:#a78bfa">🎨 Customize</button>
+      <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
     </div>
 
     <div id="tab-dashboard" class="tab-pane active">
@@ -487,6 +488,30 @@ th{color:var(--text2)}
       </div>
     </div>
 
+    <div id="tab-settings" class="tab-pane">
+      <div class="card">
+        <h3 style="color:var(--secondary);margin-bottom:1rem">🔐 Password Change Karein</h3>
+        <div class="form-row">
+          <div class="field">
+            <label>Maujuda Password (Current)</label>
+            <input type="password" id="pass-current" placeholder="Purana password">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Naya Password</label>
+            <input type="password" id="pass-new" placeholder="Naya password (kam az kam 4 harf)">
+          </div>
+          <div class="field">
+            <label>Naya Password Dobara</label>
+            <input type="password" id="pass-confirm" placeholder="Confirm naya password">
+          </div>
+        </div>
+        <button class="btn" onclick="changePassword()" style="margin-top:.5rem">🔐 Password Tabdeel Karein</button>
+        <div id="pass-msg" style="margin-top:.8rem;font-size:.9rem"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -520,7 +545,7 @@ function saveServiceKey(){
 }
 
 // =================== CONFIG ===================
-let ADMIN_PASS = 'admin123'; // Password yahan change karein
+let ADMIN_PASS = localStorage.getItem('admin_pass') || 'admin123';
 let GH_TOKEN = localStorage.getItem('gh_token') || '';
 let GH_REPO = localStorage.getItem('gh_repo') || 'nouman106/-Digital-Library-Hub';
 let allBooks = [];
@@ -1096,6 +1121,38 @@ async function deleteStorageFile(bucket, fileName){
   if(error){ showToast('❌ Delete nahi hua: ' + error.message); return; }
   showToast('✅ File delete ho gayi!');
   loadStorageFiles(bucket);
+}
+
+// =================== SETTINGS ===================
+function changePassword(){
+  const current = document.getElementById('pass-current').value;
+  const newPass = document.getElementById('pass-new').value;
+  const confirm = document.getElementById('pass-confirm').value;
+  const msgEl = document.getElementById('pass-msg');
+
+  if(current !== ADMIN_PASS){
+    msgEl.style.color = '#f44336';
+    msgEl.innerText = '❌ Maujuda password galat hai!';
+    return;
+  }
+  if(newPass.length < 4){
+    msgEl.style.color = '#f44336';
+    msgEl.innerText = '❌ Naya password kam az kam 4 harf ka hona chahiye!';
+    return;
+  }
+  if(newPass !== confirm){
+    msgEl.style.color = '#f44336';
+    msgEl.innerText = '❌ Dono naye password same nahi hain!';
+    return;
+  }
+  ADMIN_PASS = newPass;
+  localStorage.setItem('admin_pass', newPass);
+  msgEl.style.color = '#4caf50';
+  msgEl.innerText = '✅ Password kamiyabi se tabdeel ho gaya!';
+  document.getElementById('pass-current').value = '';
+  document.getElementById('pass-new').value = '';
+  document.getElementById('pass-confirm').value = '';
+  showToast('✅ Password update ho gaya!');
 }
 
 // =================== UTILS ===================
