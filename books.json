@@ -46,5 +46,17 @@
     "description": "Storage se auto-added kitab.",
     "allow_access": true,
     "allow_download": true
+  },
+  {
+    "id": 1777994734531,
+    "title": "1777867282786 at5eea",
+    "author": "Unknown",
+    "category": "other",
+    "price": 0,
+    "pdf_url": "https://raw.githubusercontent.com/nouman106/-Digital-Library-Hub/main/books-pdf/1777867282786_at5eea.pdf",
+    "cover_url": "",
+    "description": "Storage se auto-added kitab.",
+    "allow_access": true,
+    "allow_download": true
   }
 ]
